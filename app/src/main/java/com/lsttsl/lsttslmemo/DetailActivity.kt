@@ -45,10 +45,9 @@ import kotlin.math.min
 
 class DetailActivity : AppCompatActivity() {
 
+
     private var viewModel: DetailViewModel? = null
-
     private val dialogCalendar = Calendar.getInstance()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,16 +63,15 @@ class DetailActivity : AppCompatActivity() {
                 .get(DetailViewModel::class.java)
         }
 
-        viewModel!!.memoLiveData.observe(this, Observer {
+        viewModel!!.memoLiveData.observe (this, Observer {
             supportActionBar?.title = it.title
             contentEdit.setText(it.content)
             alarmInfoView.setAlarmDate(it.alarmTime)
             locationInfoView.setLocation(it.latitude, it.longitude)
         })
 
-
         val memoId = intent.getStringExtra("MEMO_ID")
-        if (memoId != null) viewModel!!.loadMemo(memoId)
+        if(memoId != null) viewModel!!.loadMemo(memoId)
 
         toolbarLayout.setOnClickListener {
             val view = LayoutInflater.from(this).inflate(R.layout.dialog_title, null)
@@ -85,24 +83,20 @@ class DetailActivity : AppCompatActivity() {
                 .setNegativeButton("취소", null)
                 .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
                     supportActionBar?.title = titleEdit.text.toString()
+                    toolbarLayout.title = titleEdit.text.toString()
                     viewModel!!.memoData.title = titleEdit.text.toString()
                 }).show()
         }
 
-        contentEdit.addTextChangedListener(object : TextWatcher {
+        contentEdit.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 viewModel!!.memoData.content = s.toString()
             }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
 
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
         })
-
 
         locationInfoView.setOnClickListener {
             val latitude = viewModel!!.memoData.latitude
@@ -121,9 +115,12 @@ class DetailActivity : AppCompatActivity() {
                     .show()
             }
         }
-
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        viewModel?.addOrUpdateMemo(this)
+    }
 
     private fun openDateDialog() {
         val datePickerDialog = DatePickerDialog(this)
@@ -135,7 +132,6 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun openTimeDialog() {
-
         val timePickerDialog = TimePickerDialog(
             this,
             TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
@@ -143,12 +139,10 @@ class DetailActivity : AppCompatActivity() {
                 dialogCalendar.set(Calendar.MINUTE, minute)
 
                 viewModel?.setAlarm(dialogCalendar.time)
-            }, 0, 0, false
-        )
+            },
+            0, 0, false)
         timePickerDialog.show()
-
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_detail, menu)
@@ -157,8 +151,8 @@ class DetailActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-
+        when(item.itemId)
+        {
             R.id.menu_share -> {
                 val intent = Intent()
                 intent.action = Intent.ACTION_SEND
@@ -168,13 +162,11 @@ class DetailActivity : AppCompatActivity() {
 
                 startActivity(intent)
             }
-
-
             R.id.menu_alarm -> {
-                if (viewModel?.memoData?.alarmTime!!.after(Date())) {
+                if(viewModel?.memoData?.alarmTime!!.after(Date())) {
                     AlertDialog.Builder(this)
                         .setTitle("안내")
-                        .setMessage("기존에 알람이 설정되어 있습니다. 삭제 또는 재설정 할 수 있습니다.")
+                        .setMessage("기존에 알람이 설정되어 있습니다. 삭제 또는 재설정할 수 있습니다.")
                         .setPositiveButton("재설정", DialogInterface.OnClickListener { dialog, which ->
                             openDateDialog()
                         })
@@ -182,106 +174,60 @@ class DetailActivity : AppCompatActivity() {
                             viewModel?.deleteAlarm()
                         })
                         .show()
-                } else {
+                }
+                else {
                     openDateDialog()
                 }
             }
-
             R.id.menu_location -> {
                 AlertDialog.Builder(this)
                     .setTitle("안내")
-                    .setMessage("현재 위치를 메모에 저장하거나 삭제 할 수 있습니다.")
-                    .setPositiveButton("위치 지정", DialogInterface.OnClickListener { dialog, which ->
-                        val locationManager =
-                            getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                        val isGPSEnabled =
-                            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                        val isNetworkEnabled =
-                            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                    .setMessage("현재 위치를 메모에 저장하거나 삭제할 수 있습니다.")
+                    .setPositiveButton("위치지정", DialogInterface.OnClickListener { dialog, which ->
+                        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                        val isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                        val isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
-                        if (!isGPSEnabled && !isNetworkEnabled) {
+                        if(!isGPSEnabled && !isNetworkEnabled) {
                             Snackbar.make(
-                                toolbarLayout,
-                                "폰의 위치기능을 켜야 기능을 사용할 수 있습니다.",
-                                Snackbar.LENGTH_LONG
-                            ).setAction("설정", View.OnClickListener {
-                                val goToSettings = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                                startActivity(goToSettings)
-                            }).show()
-                        } else {
+                                    toolbarLayout,
+                                    "폰의 위치기능을 켜야 기능을 사용할 수 있습니다.",
+                                    Snackbar.LENGTH_LONG)
+                                .setAction("설정", View.OnClickListener {
+                                    val goToSettings = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                                    startActivity(goToSettings)
+                                }).show()
+                        }
+                        else {
                             val criteria = Criteria()
                             criteria.accuracy = Criteria.ACCURACY_MEDIUM
                             criteria.powerRequirement = Criteria.POWER_MEDIUM
-                            locationManager.requestSingleUpdate(
-                                criteria,
-                                object : LocationListener {
-                                    override fun onLocationChanged(location: Location?) {
-                                        location?.run {
-                                            viewModel!!.setLocation(latitude, longitude)
-                                        }
+
+                            locationManager.requestSingleUpdate(criteria, object : LocationListener {
+                                override fun onLocationChanged(location: Location?) {
+                                    location?.run {
+                                        viewModel!!.setLocation(latitude, longitude)
                                     }
+                                }
 
-                                    override fun onStatusChanged(
-                                        provider: String?,
-                                        status: Int,
-                                        extras: Bundle?
-                                    ) {
+                                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+                                }
 
-                                    }
+                                override fun onProviderEnabled(provider: String?) {
+                                }
 
-                                    override fun onProviderEnabled(provider: String?) {
+                                override fun onProviderDisabled(provider: String?) {
+                                }
 
-                                    }
-
-                                    override fun onProviderDisabled(provider: String?) {
-
-                                    }
-
-                                },
-                                null
-                            )
+                            }, null)
                         }
                     })
-
+                    .setNegativeButton("삭제", DialogInterface.OnClickListener { dialog, which ->
+                        viewModel!!.setLocation(0.0, 0.0)
+                    })
+                    .show()
             }
-
-
         }
         return super.onOptionsItemSelected(item)
-
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        viewModel?.addOrUpdateMemo(this)
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
