@@ -1,10 +1,16 @@
 package com.lsttsl.lsttslmemo.data
 
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.lsttsl.lsttslmemo.AlarmTool
 import io.realm.Realm
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Exception
 import java.util.*
 
 
@@ -64,6 +70,36 @@ class DetailViewModel : ViewModel() {
         memoData.latitude = latitude
         memoData.longitude  = longitude
         memoLiveData.value = memoData
+    }
+
+    fun  deleteWeather(){
+        memoData.weather =""
+        memoLiveData.value = memoData
+    }
+
+    fun  setWeather(latitude: Double, longitude: Double){
+        viewModelScope.launch {
+            memoData.weather =  WeatherData.getCurrentWeather(latitude, longitude)
+            memoLiveData.value = memoData
+
+        }
+    }
+
+    fun  setImageFile(context: Context, bitmap: Bitmap){
+        val imageFile = File(context.getDir("image", Context.MODE_PRIVATE), memoData.id+".jpg")
+        if (imageFile.exists()) imageFile.delete()
+
+        imageFile.createNewFile()
+        val outputStream = FileOutputStream(imageFile)
+        outputStream.close()
+        memoData.imageFile = memoData.id + ".jpg"
+        memoLiveData.value = memoData
+
+        try {
+
+        }catch ( e: Exception){
+            println(e)
+        }
     }
 
 }
