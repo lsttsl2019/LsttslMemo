@@ -1,16 +1,13 @@
-package com.lsttsl.lsttslmemo.data
+package com.lsttsl.lsttslmemo
 
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.LocusId
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.core.content.contentValuesOf
-import com.lsttsl.lsttslmemo.DetailActivity
-import com.lsttsl.lsttslmemo.R
+import com.lsttsl.lsttslmemo.data.MemoDao
 import io.realm.Realm
 import java.util.*
 
@@ -24,20 +21,29 @@ class AlarmTool : BroadcastReceiver() {
             val intent = Intent(context, AlarmTool::class.java)
             intent.data = Uri.parse("id:" + id)
             intent.putExtra("MEMO_ID", id)
-            intent.action = ACTION_RUN_ALARM
+            intent.action =
+                ACTION_RUN_ALARM
 
             return PendingIntent.getBroadcast(context, 0, intent, 0)
         }
 
         fun addAlarm(context: Context, id: String, alarmTime: Date) {
-            val alarmIntent = createAlarmIntent(context, id)
+            val alarmIntent =
+                createAlarmIntent(
+                    context,
+                    id
+                )
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime.time, alarmIntent)
         }
 
         fun deleteAlarm(context: Context, id: String) {
 
-            val alarmIntent = createAlarmIntent(context, id)
+            val alarmIntent =
+                createAlarmIntent(
+                    context,
+                    id
+                )
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.cancel(alarmIntent)
         }
@@ -49,7 +55,7 @@ class AlarmTool : BroadcastReceiver() {
         when (intent!!.action) {
 
 
-            AlarmTool.ACTION_RUN_ALARM -> {
+            ACTION_RUN_ALARM -> {
                 val memoId = intent.getStringExtra("MEMO_ID")
                 val realm = Realm.getDefaultInstance()
                 val memoData = MemoDao(realm).selectMemo(memoId)
@@ -93,7 +99,11 @@ class AlarmTool : BroadcastReceiver() {
              val activeAlarms = MemoDao(realm).getActiveAlarms()
 
              for (memoData in activeAlarms){
-                 addAlarm(context!!, memoData.id, memoData.alarmTime)
+                 addAlarm(
+                     context!!,
+                     memoData.id,
+                     memoData.alarmTime
+                 )
              }
          }
 
